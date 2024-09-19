@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from io import BytesIO
+import datetime
 
 # Function to reformat phone numbers
 def reformat_phone(phone_number):
@@ -27,12 +28,14 @@ def read_xlsx_to_pd(file_path: str) -> pd.DataFrame:
         pd.DataFrame: DataFrame with integer values converted to strings.
     """
     # Read the Excel file into a DataFrame
-    df = pd.read_excel(file_path, dtype=str)
-    
-    for col in df.columns:
-        df[col] = df[col].astype(str)
+    df = pd.read_excel(file_path, header=None, dtype=str)
 
-    return df
+    phone_numbers = df.apply(lambda row: ''.join(row.astype(str)), axis=1)
+    
+    # for col in df.columns:
+    #     df[col] = df[col].astype(str)
+
+    return pd.DataFrame({'phone': phone_numbers})
 
 
 
@@ -80,12 +83,15 @@ if uploaded_file:
         # Convert DataFrame to CSV
         xlsx = save_df_to_xlsx(df)
 
+        current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+
         # Button to download the modified file
         st.write("Click the button below to download the modified XLSX file:")
+
         st.download_button(
             label="Download modified XLSX",
             data=xlsx,
-            file_name="modified_phone_numbers.xlsx",
+            file_name=f"modified_phone_numbers_{current_date}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
     else:
